@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: ./JobMelaClient  # Path to your frontend Dockerfile
+      dockerfile: Dockerfile
+    ports:
+      - "5173:3000"  # Maps host port 5173 to container's port 80
+    environment:
+      EMAIL_USER: jvnithin2583@gmail.com
+      EMAIL_PASS: zxqwxgqgsrmkejdd
+      
+    depends_on:
+      - backend
+    networks:
+      - jobnet
+
+  backend:
+    build:
+      context: ./jobMelaServer  # Path to your backend Dockerfile
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000" 
+    environment:
+      DB_HOST: db          
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: password
+      DB_NAME: jobatsdb
+      JWT_SECRET: scaleorange123
+    depends_on:
+      - db
+    networks:
+      - jobnet
+
+  db:
+    image: postgres:15
+    restart: always
+    ports:
+      - "5432:5432"  
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: jobatsdb
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - jobnet
+
+volumes:
+  pgdata:
+
+networks:
+  jobnet:
