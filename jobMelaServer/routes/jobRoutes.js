@@ -13,4 +13,6 @@ router.get("/apply/:jobId",tokenVerification(["user"]), jobController.applyForJo
 router.get("/:jobId/applications", tokenVerification(["admin"]),jobController.getApplicationsForJob);
 router.post("/:applicationId/comment", tokenVerification(["admin"]),jobController.addComment);
 router.put("/:applicationId/edit", tokenVerification(["admin"]),jobController.editApplication);
+router.get("/getEligibleJobs",tokenVerification(["user"]),jobController.getEligibleJobs);
+
 export default router;

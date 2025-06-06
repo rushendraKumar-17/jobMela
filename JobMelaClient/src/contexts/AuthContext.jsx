@@ -11,6 +11,7 @@ export const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
  
   const [user, setUser] = useState(null); // Initialize user state
+  const [loading,setLoading] = useState(true);
   const updateUser = (user)=>{
     setUser(user);
   }
@@ -32,6 +33,7 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
   const getUserDetails = async () => {
+    setLoading(true);
     try {
       const token = localStorage.getItem("token"); // Get token from localStorage
       if (token) {
@@ -48,17 +50,20 @@ export const AuthProvider = ({ children }) => {
         } else {
           console.error("Failed to fetch user details");
         }
+        setLoading(false);
       }
     } catch (error) {
       console.error("Error fetching user details:", error);
+      setLoading(false);
     }
   };
 
   useEffect(() => {
+    
     getUserDetails();
   }, []);
   return (
-    <AuthContext.Provider value={{ user, login, logout, apiurl,updateUser }}>
+    <AuthContext.Provider value={{ user, login, logout, apiurl,updateUser,loading }}>
       {children}
     </AuthContext.Provider>
   );

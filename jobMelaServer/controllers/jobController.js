@@ -1,5 +1,6 @@
 import jobModel from "../models/jobModel.js";
 import applicationModel from "../models/applicationModel.js";
+import userModel from "../models/userModel.js";
 const getAllJobs = async (req, res) => {
   try {
     const jobs = await jobModel.findAll({
@@ -274,6 +275,37 @@ const editApplication = async(req,res)=>{
   }
 }
 
+const getEligibleJobs = async (req, res) => {
+  const email = req.user.email;
+  const user = await userModel.findOne({ where: { email } });
+  if(!user.formSubmitted){
+    return res.status(400).json({message:"Please submit the google form first to see eligible jobs"});
+  }
+  const jobs = await jobModel.findAll();
+  console.log(jobs);
+  console.log(user)
+  const eligibleJobs = jobs.filter((job) => {
+    return (
+      parseInt(job.yearsOfExperience) <= parseInt(user.yearsOfExperience) &&
+      job.degrees.every((degree) => user.degrees.includes(degree)) &&
+      ( parseInt(user.yearOfGraduation) >= parseInt(job.minYearOfGraduation) && parseInt(user.yearOfGraduation) <= parseInt(job.maxYearOfGraduation))
+      &&
+      ( job.skills.every((skill) => user.skills.includes(skill)) ) &&
+      (job.languagesKnown.every((lang) => user.languages.includes(lang))) &&
+      (job.gender === "any" || user.gender.toLowerCase() === job.gender.toLowerCase())
+
+    );
+  })
+  const requiredDetails = ["id", "title", "company", "location", "createdAt", "salary", "yearsOfExperience", ];
+  const eligibleJobDetails = eligibleJobs.map((job) => {
+    const jobDetails = {};
+    requiredDetails.forEach((detail) => {
+      jobDetails[detail] = job[detail];
+    });
+    return jobDetails;
+  })
+  return res.json(eligibleJobDetails);
+}
 export default {
   getAllJobs,
   getJobById,
@@ -284,5 +316,6 @@ export default {
   getApplicationsForJob,
   editJob,
   addComment,
-  editApplication
+  editApplication,
+  getEligibleJobs
 };

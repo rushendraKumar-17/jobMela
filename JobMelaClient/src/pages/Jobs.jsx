@@ -44,7 +44,7 @@
 
 // export default Jobs;
 // src/pages/Jobs.jsx
-import React, { useContext, useEffect } from "react";
+import React, { useContext, useEffect,useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Briefcase, Clock, User, MapPin } from "lucide-react";
 import AppContext from "../contexts/AppContext";
@@ -53,11 +53,15 @@ import axios from "axios";
 const Jobs = () => {
   const { cardData, setCardData, apiurl } = useContext(AppContext);
   const navigate = useNavigate();
-
+  const [eligibleJobs, setEligibleJobs] = useState([]);
   const getCardData = async () => {
     try {
+      const eligibleJobs = await axios.get(`${apiurl}/jobs/getEligibleJobs`,{headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }});
+      // console.log(eligibleJobs);
+      setEligibleJobs(eligibleJobs.data);
       const response = await axios.get(`${apiurl}/jobs/getAll`);
-      setCardData(response.data);
+      // console.log(response.data)
+      setCardData(response.data.filter((job) => !eligibleJobs.data.includes(job.id)));
     } catch (error) {
       console.error("Error fetching card data:", error);
     }
@@ -97,6 +101,52 @@ const Jobs = () => {
 
         {/* Jobs List */}
         <div className="space-y-4">
+          <h1 className="text-xl font-bold text-gray-900">Eligible Jobs</h1>
+          {eligibleJobs.map((job) => (
+            <div
+              key={job.id}
+              onClick={() => navigate(`/job/${job.id}`)}
+              className="group bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 p-6 cursor-pointer border border-gray-100 hover:border-blue-100"
+              role="button"
+              tabIndex={0}
+            >
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                {/* Left Content */}
+                <div className="flex-1 space-y-2">
+                  <h2 className="text-xl font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
+                    {job.title}
+                  </h2>
+                  <div className="flex items-center gap-4 text-sm text-gray-600 flex-wrap">
+                    <div className="flex items-center gap-1">
+                      <Briefcase className="w-4 h-4 text-gray-500" />
+                      <span className="font-medium">{job.company}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <MapPin className="w-4 h-4 text-gray-500" />
+                      <span>{job.location.join(', ')}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Clock className="w-4 h-4 text-gray-500" />
+                      <span>{timeSince(job.createdAt)}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right Content */}
+                <div className="flex items-center gap-4">
+                  <div className="bg-blue-50 px-3 py-1 rounded-full text-sm text-blue-800">
+                    {job.yearsOfExperience}+ years experience
+                  </div>
+                  {job.jobType && (
+                    <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">
+                      {job.jobType}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+          <h1 className="text-xl font-bold text-gray-900">Ineligible Jobs</h1>
           {cardData.map((job) => (
             <div
               key={job.id}
@@ -122,7 +172,7 @@ const Jobs = () => {
                     </div>
                     <div className="flex items-center gap-1">
                       <Clock className="w-4 h-4 text-gray-500" />
-                      <span>{timeSince(job.postedAt)}</span>
+                      <span>{timeSince(job.createdAt)}</span>
                     </div>
                   </div>
                 </div>

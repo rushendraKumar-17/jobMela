@@ -370,6 +370,8 @@ const googleFormData = async (req, res) => {
   await existingUser.save();
   return res.json(existingUser);
 };
+
+
 export default {
   signUp,
   signIn,
@@ -379,4 +381,5 @@ export default {
   getAppliedJobs,
   editProfile,
   googleFormData,
+
 };

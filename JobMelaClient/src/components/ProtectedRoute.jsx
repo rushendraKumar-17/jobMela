@@ -3,8 +3,8 @@ import { AuthContext } from "../contexts/AuthContext";
 import { Navigate } from "react-router-dom";
 
 const ProtectedRoute = ({ children, forUser }) => {
-  const { user } = useContext(AuthContext);
-
+  const { user,loading } = useContext(AuthContext);
+  if(!loading){
   if (!user) {
     // Not logged in
     return <Navigate to="/login" replace />;
@@ -19,6 +19,7 @@ const ProtectedRoute = ({ children, forUser }) => {
 
   // Role not allowed
   return <Navigate to="/" replace />;
+}
 };
 
 export default ProtectedRoute;
